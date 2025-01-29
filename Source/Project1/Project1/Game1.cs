@@ -17,22 +17,39 @@ namespace SnakeGame
         private const int GRID_SIZE = 20;
         private const int GRID_WIDTH = 40;
         private const int GRID_HEIGHT = 30;
-        private const float INITIAL_MOVE_INTERVAL = 0.15f; // seconds between moves
+        private const float INITIAL_MOVE_INTERVAL = 0.15f;
+        private const float OBSTACLE_SPAWN_INTERVAL = 5f; // Spawn new obstacles every 5 seconds
+        private const float OBSTACLE_LIFETIME = 8f; // Obstacles last for 8 seconds
 
         private List<Vector2> snakeBody;
         private Vector2 direction;
         private Vector2 foodPosition;
         private Vector2 powerUpPosition;
-        private List<Vector2> walls;
+        private List<ObstacleInfo> obstacles;
         private PowerUpType currentPowerUp;
         private float moveTimer;
+        private float obstacleTimer;
         private float currentMoveInterval;
         private float powerUpTimer;
         private bool hasShield;
         private bool doublePoints;
         private int score;
         private bool isGameOver;
-        private KeyboardState previousKeyboardState;
+        private Random random;
+
+        private class ObstacleInfo
+        {
+            public Vector2 Position { get; set; }
+            public float TimeRemaining { get; set; }
+            public Color Color { get; set; }
+
+            public ObstacleInfo(Vector2 position, float lifetime)
+            {
+                Position = position;
+                TimeRemaining = lifetime;
+                Color = Color.Gray;
+            }
+        }
 
         public Game1()
         {
@@ -45,13 +62,13 @@ namespace SnakeGame
 
         protected override void Initialize()
         {
+            random = new Random();
             InitializeGame();
             base.Initialize();
         }
 
         private void InitializeGame()
         {
-            // Initialize snake in the middle of the screen
             snakeBody = new List<Vector2>
             {
                 new Vector2(GRID_WIDTH / 2, GRID_HEIGHT / 2),
@@ -62,37 +79,59 @@ namespace SnakeGame
             direction = Vector2.UnitX;
             currentMoveInterval = INITIAL_MOVE_INTERVAL;
             moveTimer = 0;
+            obstacleTimer = 0;
             powerUpTimer = 0;
             score = 0;
             isGameOver = false;
-
-            // Initialize walls
-            walls = new List<Vector2>();
-            InitializeWalls();
+            obstacles = new List<ObstacleInfo>();
 
             PlaceFood();
             PlacePowerUp();
+            SpawnObstacles(); // Place initial obstacles
         }
 
-        private void InitializeWalls()
+        private void SpawnObstacles()
         {
-            // Create some wall obstacles
-            for (int i = 5; i < 15; i++)
+            int obstacleCount = random.Next(3, 7); // Random number of obstacles
+            for (int i = 0; i < obstacleCount; i++)
             {
-                walls.Add(new Vector2(i, 5));
-                walls.Add(new Vector2(i + 10, 15));
+                TryAddObstacle();
             }
+        }
+
+        private void TryAddObstacle()
+        {
+            Vector2 position;
+            int maxAttempts = 50; // Prevent infinite loop
+            int attempts = 0;
+
+            do
+            {
+                position = new Vector2(
+                    random.Next(0, GRID_WIDTH),
+                    random.Next(0, GRID_HEIGHT)
+                );
+                attempts++;
+
+                // Check if position is clear
+                if (!snakeBody.Contains(position) &&
+                    !obstacles.Any(o => o.Position == position) &&
+                    position != foodPosition &&
+                    position != powerUpPosition &&
+                    // Add some padding around snake head
+                    Vector2.Distance(position, snakeBody[0]) > 3)
+                {
+                    obstacles.Add(new ObstacleInfo(position, OBSTACLE_LIFETIME));
+                    return;
+                }
+            } while (attempts < maxAttempts);
         }
 
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // Create a white square texture
             squareTexture = new Texture2D(GraphicsDevice, 1, 1);
             squareTexture.SetData(new[] { Color.White });
-
-            // Load font - you'll need to add this to your Content project
             gameFont = Content.Load<SpriteFont>("GameFont");
         }
 
@@ -109,10 +148,44 @@ namespace SnakeGame
                 return;
             }
 
+            float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            // Update obstacle timer and spawn new obstacles
+            obstacleTimer += elapsed;
+            if (obstacleTimer >= OBSTACLE_SPAWN_INTERVAL)
+            {
+                obstacleTimer = 0;
+                TryAddObstacle();
+            }
+
+            // Update obstacle lifetimes
+            UpdateObstacles(elapsed);
+
             HandleInput();
             UpdateGame(gameTime);
 
             base.Update(gameTime);
+        }
+
+        private void UpdateObstacles(float elapsed)
+        {
+            for (int i = obstacles.Count - 1; i >= 0; i--)
+            {
+                obstacles[i].TimeRemaining -= elapsed;
+
+                // Update color based on remaining time
+                float fadeStart = 2f; // Start fading 2 seconds before disappearing
+                if (obstacles[i].TimeRemaining <= fadeStart)
+                {
+                    float alpha = obstacles[i].TimeRemaining / fadeStart;
+                    obstacles[i].Color = Color.Gray * alpha;
+                }
+
+                if (obstacles[i].TimeRemaining <= 0)
+                {
+                    obstacles.RemoveAt(i);
+                }
+            }
         }
 
         private void HandleInput()
@@ -127,19 +200,16 @@ namespace SnakeGame
                 direction = -Vector2.UnitX;
             else if (keyboardState.IsKeyDown(Keys.Right) && direction != -Vector2.UnitX)
                 direction = Vector2.UnitX;
-
-            previousKeyboardState = keyboardState;
         }
 
         private void UpdateGame(GameTime gameTime)
         {
             moveTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            // Update power-up timer
             if (hasShield || doublePoints || currentMoveInterval < INITIAL_MOVE_INTERVAL)
             {
                 powerUpTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                if (powerUpTimer >= 10f) // Power-ups last 10 seconds
+                if (powerUpTimer >= 10f)
                 {
                     ResetPowerUps();
                 }
@@ -164,9 +234,9 @@ namespace SnakeGame
         {
             Vector2 head = snakeBody[0];
 
-            // Wall collision
+            // Wall and obstacle collision
             if (head.X < 0 || head.X >= GRID_WIDTH || head.Y < 0 || head.Y >= GRID_HEIGHT ||
-                walls.Any(w => w == head))
+                obstacles.Any(o => o.Position == head))
             {
                 if (hasShield)
                 {
@@ -195,7 +265,7 @@ namespace SnakeGame
             if (head == foodPosition)
             {
                 score += doublePoints ? 2 : 1;
-                snakeBody.Add(snakeBody[snakeBody.Count - 1]); // Grow snake
+                snakeBody.Add(snakeBody[snakeBody.Count - 1]);
                 PlaceFood();
             }
 
@@ -234,29 +304,28 @@ namespace SnakeGame
 
         private void PlaceFood()
         {
-            Random rand = new Random();
             do
             {
                 foodPosition = new Vector2(
-                    rand.Next(0, GRID_WIDTH),
-                    rand.Next(0, GRID_HEIGHT)
+                    random.Next(0, GRID_WIDTH),
+                    random.Next(0, GRID_HEIGHT)
                 );
-            } while (snakeBody.Contains(foodPosition) || walls.Contains(foodPosition));
+            } while (snakeBody.Contains(foodPosition) ||
+                     obstacles.Any(o => o.Position == foodPosition));
         }
 
         private void PlacePowerUp()
         {
-            Random rand = new Random();
-            currentPowerUp = (PowerUpType)rand.Next(0, 3);
+            currentPowerUp = (PowerUpType)random.Next(0, 3);
             do
             {
                 powerUpPosition = new Vector2(
-                    rand.Next(0, GRID_WIDTH),
-                    rand.Next(0, GRID_HEIGHT)
+                    random.Next(0, GRID_WIDTH),
+                    random.Next(0, GRID_HEIGHT)
                 );
             } while (snakeBody.Contains(powerUpPosition) ||
-                    walls.Contains(powerUpPosition) ||
-                    powerUpPosition == foodPosition);
+                     obstacles.Any(o => o.Position == powerUpPosition) ||
+                     powerUpPosition == foodPosition);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -265,10 +334,10 @@ namespace SnakeGame
 
             spriteBatch.Begin();
 
-            // Draw walls
-            foreach (Vector2 wall in walls)
+            // Draw obstacles
+            foreach (var obstacle in obstacles)
             {
-                DrawSquare(wall, Color.Gray);
+                DrawSquare(obstacle.Position, obstacle.Color);
             }
 
             // Draw snake
@@ -282,22 +351,16 @@ namespace SnakeGame
             DrawSquare(foodPosition, Color.Red);
 
             // Draw power-up
-            Color powerUpColor = Color.White;
-            switch (currentPowerUp)
+            Color powerUpColor = currentPowerUp switch
             {
-                case PowerUpType.Speed:
-                    powerUpColor = Color.Blue;
-                    break;
-                case PowerUpType.Shield:
-                    powerUpColor = Color.Yellow;
-                    break;
-                case PowerUpType.DoublePoints:
-                    powerUpColor = Color.Purple;
-                    break;
-            }
+                PowerUpType.Speed => Color.Blue,
+                PowerUpType.Shield => Color.Yellow,
+                PowerUpType.DoublePoints => Color.Purple,
+                _ => Color.White
+            };
             DrawSquare(powerUpPosition, powerUpColor);
 
-            // Draw score and active power-ups
+            // Draw UI
             string statusText = $"Score: {score}";
             if (hasShield) statusText += " SHIELD";
             if (currentMoveInterval < INITIAL_MOVE_INTERVAL) statusText += " SPEED";
