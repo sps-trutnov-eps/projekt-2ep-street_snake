@@ -268,9 +268,15 @@ namespace SnakeGame
                 snakeBody.Add(snakeBody[snakeBody.Count - 1]);
                 PlaceFood();
             }
-
-            // Power-up collision
-            if (head == powerUpPosition)
+            if (doublePoints && head == foodPosition )
+            {
+                snakeBody.Add(snakeBody[snakeBody.Count +2]);
+                PlaceFood();
+                
+                
+            }
+                // Power-up collision
+                if (head == powerUpPosition)
             {
                 ApplyPowerUp();
                 PlacePowerUp();
