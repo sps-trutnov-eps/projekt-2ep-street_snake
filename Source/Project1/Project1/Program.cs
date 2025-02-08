@@ -1,3 +1,3 @@
 ﻿
-using var game = new SnakeGame.Game1();
+using var game = new StreetSnake.Game1();
 game.Run();
