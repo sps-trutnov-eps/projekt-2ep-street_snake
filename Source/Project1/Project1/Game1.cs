@@ -13,7 +13,7 @@ namespace StreetSnake
         Playing,
         GameOver
     }
-    zkouska gitus
+    
     public class Game1 : Game
     {
         private GraphicsDeviceManager graphics;
@@ -48,19 +48,97 @@ namespace StreetSnake
         private bool isGameOver;
         private Random random;
 
-        private class ObstacleInfo
+        public enum ObstacleShape
         {
-            public Vector2 Position { get; set; }
+            Single,
+            LShape,
+            Tree,
+            Wall,
+            Cross
+        }
+        public class ObstacleInfo
+        {
+            public List<Vector2> Positions { get; set; }
             public float TimeRemaining { get; set; }
             public Color Color { get; set; }
 
-            public ObstacleInfo(Vector2 position, float lifetime)
+            public ObstacleInfo(List<Vector2> positions, float lifetime)
             {
-                Position = position;
+                Positions = positions;
                 TimeRemaining = lifetime;
                 Color = Color.Gray;
             }
         }
+        private List<Vector2> CreateObstacleShape(Vector2 startPos, ObstacleShape shape)
+        {
+            List<Vector2> positions = new List<Vector2>();
+
+            switch (shape)
+            {
+                case ObstacleShape.Single:
+                    positions.Add(startPos);
+                    break;
+
+                case ObstacleShape.LShape:
+                    positions.Add(startPos);
+                    positions.Add(new Vector2(startPos.X + 1, startPos.Y));
+                    positions.Add(new Vector2(startPos.X + 1, startPos.Y + 1));
+                    break;
+
+                case ObstacleShape.Tree:
+                    positions.Add(startPos);
+                    positions.Add(new Vector2(startPos.X, startPos.Y + 1));
+                    positions.Add(new Vector2(startPos.X - 1, startPos.Y));
+                    positions.Add(new Vector2(startPos.X + 1, startPos.Y));
+                    break;
+
+                case ObstacleShape.Wall:
+                    for (int i = 0; i < 4; i++)
+                    {
+                        positions.Add(new Vector2(startPos.X + i, startPos.Y));
+                    }
+                    break;
+
+                case ObstacleShape.Cross:
+                    positions.Add(startPos);
+                    positions.Add(new Vector2(startPos.X - 1, startPos.Y));
+                    positions.Add(new Vector2(startPos.X + 1, startPos.Y));
+                    positions.Add(new Vector2(startPos.X, startPos.Y - 1));
+                    positions.Add(new Vector2(startPos.X, startPos.Y + 1));
+                    break;
+            }
+
+            return positions;
+        }
+
+        private bool IsValidObstaclePosition(List<Vector2> positions)
+        {
+            foreach (var pos in positions)
+            {
+                // Check if position is within grid bounds
+                if (pos.X < 0 || pos.X >= GRID_WIDTH || pos.Y < 0 || pos.Y >= GRID_HEIGHT)
+                    return false;
+
+                // Check if position overlaps with snake
+                if (snakeBody.Contains(pos))
+                    return false;
+
+                // Check if position overlaps with existing obstacles
+                if (obstacles.Any(o => o.Positions.Contains(pos)))
+                    return false;
+
+                // Check if position overlaps with food or power-up
+                if (pos == foodPosition || pos == powerUpPosition)
+                    return false;
+
+                // Check if position is too close to snake head
+                if (Vector2.Distance(pos, snakeBody[0]) <= 3)
+                    return false;
+            }
+
+            return true;
+        }
+
 
         public Game1()
         {
@@ -128,30 +206,29 @@ namespace StreetSnake
 
         private void TryAddObstacle()
         {
-            Vector2 position;
             int maxAttempts = 50;
             int attempts = 0;
 
-            do
+            ObstacleShape shape = (ObstacleShape)random.Next(0, 5);
+
+            while (attempts < maxAttempts)
             {
-                position = new Vector2(
+                Vector2 startPos = new Vector2(
                     random.Next(0, GRID_WIDTH),
                     random.Next(0, GRID_HEIGHT)
                 );
-                attempts++;
 
-                if (!snakeBody.Contains(position) &&
-                    !obstacles.Any(o => o.Position == position) &&
-                    position != foodPosition &&
-                    position != powerUpPosition &&
-                    Vector2.Distance(position, snakeBody[0]) > 3)
+                List<Vector2> obstaclePositions = CreateObstacleShape(startPos, shape);
+
+                if (IsValidObstaclePosition(obstaclePositions))
                 {
-                    obstacles.Add(new ObstacleInfo(position, OBSTACLE_LIFETIME));
+                    obstacles.Add(new ObstacleInfo(obstaclePositions, OBSTACLE_LIFETIME));
                     return;
                 }
-            } while (attempts < maxAttempts);
-        }
 
+                attempts++;
+            }
+        }
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -268,8 +345,9 @@ namespace StreetSnake
         {
             Vector2 head = snakeBody[0];
 
+            // Check wall collisions
             if (head.X < 0 || head.X >= GRID_WIDTH || head.Y < 0 || head.Y >= GRID_HEIGHT ||
-                obstacles.Any(o => o.Position == head))
+                obstacles.Any(o => o.Positions.Contains(head)))
             {
                 if (hasShield)
                 {
@@ -343,7 +421,7 @@ namespace StreetSnake
                     random.Next(0, GRID_HEIGHT)
                 );
             } while (snakeBody.Contains(foodPosition) ||
-                     obstacles.Any(o => o.Position == foodPosition));
+                     obstacles.Any(o => o.Positions.Contains(foodPosition)));
         }
 
         private void PlacePowerUp()
@@ -356,26 +434,24 @@ namespace StreetSnake
                     random.Next(0, GRID_HEIGHT)
                 );
             } while (snakeBody.Contains(powerUpPosition) ||
-                     obstacles.Any(o => o.Position == powerUpPosition) ||
+                     obstacles.Any(o => o.Positions.Contains(powerUpPosition)) ||
                      powerUpPosition == foodPosition);
         }
-
         protected override void Draw(GameTime gameTime)
-        {
+        { 
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
 
-            if (currentGameState == GameState.MainMenu)
+            if (currentGameState == GameState.Playing)
             {
-                startButton.Draw(spriteBatch);
-                exitButton.Draw(spriteBatch);
-            }
-            else if (currentGameState == GameState.Playing)
-            {
+                // Draw obstacles
                 foreach (var obstacle in obstacles)
                 {
-                    DrawSquare(obstacle.Position, obstacle.Color);
+                    foreach (var position in obstacle.Positions)
+                    {
+                        DrawSquare(position, obstacle.Color);
+                    }
                 }
 
                 for (int i = 0; i < snakeBody.Count; i++)
