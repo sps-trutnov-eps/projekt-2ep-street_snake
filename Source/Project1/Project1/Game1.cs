@@ -13,7 +13,7 @@ namespace StreetSnake
         Playing,
         GameOver
     }
-
+    zkouska gitus
     public class Game1 : Game
     {
         private GraphicsDeviceManager graphics;
