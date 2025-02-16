@@ -27,9 +27,9 @@ namespace StreetSnake
         private const int GRID_SIZE = 20;
         private const int GRID_WIDTH = 40;
         private const int GRID_HEIGHT = 30;
-        private const float INITIAL_MOVE_INTERVAL = 0.3f; // Increased move interval for slower game speed
-        private const float OBSTACLE_SPAWN_INTERVAL = 5f; // Spawn new obstacles every 5 seconds
-        private const float OBSTACLE_LIFETIME = 8f; // Obstacles last for 8 seconds
+        private const float INITIAL_MOVE_INTERVAL = 0.3f;
+        private const float OBSTACLE_SPAWN_INTERVAL = 5f;
+        private const float OBSTACLE_LIFETIME = 8f;
 
         private List<Vector2> snakeBody;
         private Vector2 direction;
@@ -68,7 +68,7 @@ namespace StreetSnake
 
             graphics.PreferredBackBufferWidth = GRID_WIDTH * GRID_SIZE;
             graphics.PreferredBackBufferHeight = GRID_HEIGHT * GRID_SIZE;
-            IsMouseVisible = true; // Ensures the mouse cursor is visible
+            IsMouseVisible = true;
         }
 
         protected override void Initialize()
@@ -108,15 +108,17 @@ namespace StreetSnake
             score = 0;
             isGameOver = false;
             obstacles = new List<ObstacleInfo>();
+            hasShield = false;
+            doublePoints = false;
 
             PlaceFood();
             PlacePowerUp();
-            SpawnObstacles(); // Place initial obstacles
+            SpawnObstacles();
         }
 
         private void SpawnObstacles()
         {
-            int obstacleCount = random.Next(3, 7); // Random number of obstacles
+            int obstacleCount = random.Next(3, 7);
             for (int i = 0; i < obstacleCount; i++)
             {
                 TryAddObstacle();
@@ -126,7 +128,7 @@ namespace StreetSnake
         private void TryAddObstacle()
         {
             Vector2 position;
-            int maxAttempts = 50; // Prevent infinite loop
+            int maxAttempts = 50;
             int attempts = 0;
 
             do
@@ -137,12 +139,10 @@ namespace StreetSnake
                 );
                 attempts++;
 
-                // Check if position is clear
                 if (!snakeBody.Contains(position) &&
                     !obstacles.Any(o => o.Position == position) &&
                     position != foodPosition &&
                     position != powerUpPosition &&
-                    // Add some padding around snake head
                     Vector2.Distance(position, snakeBody[0]) > 3)
                 {
                     obstacles.Add(new ObstacleInfo(position, OBSTACLE_LIFETIME));
@@ -158,7 +158,6 @@ namespace StreetSnake
             squareTexture.SetData(new[] { Color.White });
             gameFont = Content.Load<SpriteFont>("GameFont");
 
-            // Load content for buttons
             startButton.LoadContent(gameFont);
             exitButton.LoadContent(gameFont);
         }
@@ -174,17 +173,19 @@ namespace StreetSnake
                 startButton.Update();
                 exitButton.Update();
             }
-            else if (isGameOver)
+            else if (currentGameState == GameState.GameOver)
             {
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
+                {
                     InitializeGame();
-                return;
+                    currentGameState = GameState.Playing;
+                    isGameOver = false;
+                }
             }
             else if (currentGameState == GameState.Playing)
             {
                 float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-                // Update obstacle timer and spawn new obstacles
                 obstacleTimer += elapsed;
                 if (obstacleTimer >= OBSTACLE_SPAWN_INTERVAL)
                 {
@@ -192,9 +193,7 @@ namespace StreetSnake
                     TryAddObstacle();
                 }
 
-                // Update obstacle lifetimes
                 UpdateObstacles(elapsed);
-
                 HandleInput();
                 UpdateGame(gameTime);
             }
@@ -208,8 +207,7 @@ namespace StreetSnake
             {
                 obstacles[i].TimeRemaining -= elapsed;
 
-                // Update color based on remaining time
-                float fadeStart = 2f; // Start fading 2 seconds before disappearing
+                float fadeStart = 2f;
                 if (obstacles[i].TimeRemaining <= fadeStart)
                 {
                     float alpha = obstacles[i].TimeRemaining / fadeStart;
@@ -269,7 +267,6 @@ namespace StreetSnake
         {
             Vector2 head = snakeBody[0];
 
-            // Wall and obstacle collision
             if (head.X < 0 || head.X >= GRID_WIDTH || head.Y < 0 || head.Y >= GRID_HEIGHT ||
                 obstacles.Any(o => o.Position == head))
             {
@@ -284,7 +281,6 @@ namespace StreetSnake
                 return;
             }
 
-            // Self collision
             if (snakeBody.Skip(1).Any(segment => segment == head))
             {
                 if (hasShield)
@@ -298,7 +294,6 @@ namespace StreetSnake
                 return;
             }
 
-            // Food collision
             if (head == foodPosition)
             {
                 score += doublePoints ? 2 : 1;
@@ -306,7 +301,6 @@ namespace StreetSnake
                 PlaceFood();
             }
 
-            // Power-up collision
             if (head == powerUpPosition)
             {
                 ApplyPowerUp();
@@ -378,23 +372,19 @@ namespace StreetSnake
             }
             else if (currentGameState == GameState.Playing)
             {
-                // Draw obstacles
                 foreach (var obstacle in obstacles)
                 {
                     DrawSquare(obstacle.Position, obstacle.Color);
                 }
 
-                // Draw snake
                 for (int i = 0; i < snakeBody.Count; i++)
                 {
                     Color snakeColor = hasShield ? Color.Gold : Color.Green;
                     DrawSquare(snakeBody[i], i == 0 ? Color.LightGreen : snakeColor);
                 }
 
-                // Draw food
                 DrawSquare(foodPosition, Color.Red);
 
-                // Draw power-up
                 Color powerUpColor = currentPowerUp switch
                 {
                     PowerUpType.Speed => Color.Blue,
@@ -404,7 +394,6 @@ namespace StreetSnake
                 };
                 DrawSquare(powerUpPosition, powerUpColor);
 
-                // Draw UI
                 string statusText = $"Score: {score}";
                 if (hasShield) statusText += " SHIELD";
                 if (currentMoveInterval < INITIAL_MOVE_INTERVAL) statusText += " SPEED";
@@ -474,7 +463,7 @@ namespace StreetSnake
         }
     }
 
-    enum PowerUpType
+    public enum PowerUpType
     {
         Speed,
         Shield,
