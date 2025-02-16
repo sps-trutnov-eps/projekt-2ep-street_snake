@@ -27,9 +27,10 @@ namespace StreetSnake
         private const int GRID_SIZE = 20;
         private const int GRID_WIDTH = 40;
         private const int GRID_HEIGHT = 30;
-        private const float INITIAL_MOVE_INTERVAL = 0.3f;
-        private const float OBSTACLE_SPAWN_INTERVAL = 5f;
-        private const float OBSTACLE_LIFETIME = 8f;
+        private const float INITIAL_MOVE_INTERVAL = 0.15f;
+        private const float OBSTACLE_SPAWN_INTERVAL = 3f;
+        private const float OBSTACLE_LIFETIME = 6f;
+        private const float POWER_UP_DURATION = 5f;
 
         private List<Vector2> snakeBody;
         private Vector2 direction;
@@ -242,7 +243,7 @@ namespace StreetSnake
             if (hasShield || doublePoints || currentMoveInterval < INITIAL_MOVE_INTERVAL)
             {
                 powerUpTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                if (powerUpTimer >= 10f)
+                if (powerUpTimer >= POWER_UP_DURATION)
                 {
                     ResetPowerUps();
                 }
@@ -314,7 +315,7 @@ namespace StreetSnake
             switch (currentPowerUp)
             {
                 case PowerUpType.Speed:
-                    currentMoveInterval = INITIAL_MOVE_INTERVAL / 2;
+                    currentMoveInterval = INITIAL_MOVE_INTERVAL / 2.5f;
                     break;
                 case PowerUpType.Shield:
                     hasShield = true;
