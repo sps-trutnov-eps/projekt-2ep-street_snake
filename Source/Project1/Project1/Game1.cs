@@ -47,7 +47,7 @@ namespace StreetSnake
         private int score;
         private bool isGameOver;
         private Random random;
-
+        // hihihi
         public enum ObstacleShape
         {
             Single,
