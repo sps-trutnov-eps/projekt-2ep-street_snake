@@ -13,7 +13,15 @@ namespace StreetSnake
         Playing,
         GameOver
     }
-    
+
+    // Moving the PowerUpType enum to the top level for better organization
+    public enum PowerUpType
+    {
+        Speed,
+        Shield,
+        DoublePoints
+    }
+
     public class Game1 : Game
     {
         private GraphicsDeviceManager graphics;
@@ -47,7 +55,7 @@ namespace StreetSnake
         private int score;
         private bool isGameOver;
         private Random random;
-        // hihihi
+
         public enum ObstacleShape
         {
             Single,
@@ -56,6 +64,7 @@ namespace StreetSnake
             Wall,
             Cross
         }
+
         public class ObstacleInfo
         {
             public List<Vector2> Positions { get; set; }
@@ -69,6 +78,7 @@ namespace StreetSnake
                 Color = Color.Gray;
             }
         }
+
         private List<Vector2> CreateObstacleShape(Vector2 startPos, ObstacleShape shape)
         {
             List<Vector2> positions = new List<Vector2>();
@@ -229,6 +239,7 @@ namespace StreetSnake
                 attempts++;
             }
         }
+
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -437,13 +448,28 @@ namespace StreetSnake
                      obstacles.Any(o => o.Positions.Contains(powerUpPosition)) ||
                      powerUpPosition == foodPosition);
         }
+
         protected override void Draw(GameTime gameTime)
-        { 
+        {
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
 
-            if (currentGameState == GameState.Playing)
+            if (currentGameState == GameState.MainMenu)
+            {
+                // Add main menu drawing code
+                string titleText = "Street Snake";
+                Vector2 titlePosition = new Vector2(
+                    (GRID_WIDTH * GRID_SIZE - gameFont.MeasureString(titleText).X) / 2,
+                    (GRID_HEIGHT * GRID_SIZE - gameFont.MeasureString(titleText).Y) / 2 - 100
+                );
+                spriteBatch.DrawString(gameFont, titleText, titlePosition, Color.Green);
+
+                // Draw the buttons
+                startButton.Draw(spriteBatch);
+                exitButton.Draw(spriteBatch);
+            }
+            else if (currentGameState == GameState.Playing)
             {
                 // Draw obstacles
                 foreach (var obstacle in obstacles)
@@ -486,6 +512,14 @@ namespace StreetSnake
                     (GRID_HEIGHT * GRID_SIZE - gameFont.MeasureString(gameOverText).Y) / 2
                 );
                 spriteBatch.DrawString(gameFont, gameOverText, textPosition, Color.Red);
+
+                // Display final score
+                string scoreText = $"Final Score: {score}";
+                Vector2 scorePosition = new Vector2(
+                    (GRID_WIDTH * GRID_SIZE - gameFont.MeasureString(scoreText).X) / 2,
+                    textPosition.Y + gameFont.MeasureString(gameOverText).Y + 20
+                );
+                spriteBatch.DrawString(gameFont, scoreText, scorePosition, Color.White);
             }
 
             spriteBatch.End();
@@ -538,12 +572,5 @@ namespace StreetSnake
         {
             spriteBatch.DrawString(font, Text, Position, Color.White);
         }
-    }
-
-    public enum PowerUpType
-    {
-        Speed,
-        Shield,
-        DoublePoints
     }
 }
