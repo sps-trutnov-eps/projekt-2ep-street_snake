@@ -558,7 +558,7 @@ namespace StreetSnake
             this.font = font;
             this.bounds = new Rectangle((int)Position.X, (int)Position.Y, (int)font.MeasureString(Text).X, (int)font.MeasureString(Text).Y);
         }
-
+        //gigigiig
         public void Update()
         {
             MouseState mouseState = Mouse.GetState();
