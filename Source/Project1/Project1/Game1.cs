@@ -32,6 +32,8 @@ namespace StreetSnake
         private GameState currentGameState;
         private Button startButton;
         private Button exitButton;
+        private Texture2D shieldTexture;
+
 
         private const int GRID_SIZE = 25;
         private const int GRID_WIDTH = 60;
@@ -247,6 +249,8 @@ namespace StreetSnake
             squareTexture = new Texture2D(GraphicsDevice, 1, 1);
             squareTexture.SetData(new[] { Color.White });
             gameFont = Content.Load<SpriteFont>("GameFont");
+            shieldTexture = Content.Load<Texture2D>("shield");
+
 
             startButton.LoadContent(gameFont);
             exitButton.LoadContent(gameFont);
@@ -459,6 +463,7 @@ namespace StreetSnake
 
             spriteBatch.Begin();
 
+
             if (currentGameState == GameState.MainMenu)
             {
                 // Add main menu drawing code
@@ -492,15 +497,30 @@ namespace StreetSnake
 
                 DrawSquare(foodPosition, Color.Red);
 
-                Color powerUpColor = currentPowerUp switch
+                if (currentPowerUp == PowerUpType.Shield)
                 {
-                    PowerUpType.Slow => Color.Pink,
-                    PowerUpType.Speed => Color.Blue,
-                    PowerUpType.Shield => Color.Yellow,
-                    PowerUpType.DoublePoints => Color.Purple,
-                    _ => Color.White
-                };
-                DrawSquare(powerUpPosition, powerUpColor);
+                    // Draw shield power-up using the texture
+                    Rectangle rect = new Rectangle(
+                        (int)(powerUpPosition.X * GRID_SIZE),
+                        (int)(powerUpPosition.Y * GRID_SIZE),
+                        GRID_SIZE - 1,
+                        GRID_SIZE - 1
+                    );
+                    spriteBatch.Draw(shieldTexture, rect, Color.White);
+                }
+                else
+                {
+                    // For other power-ups, use the original color-based approach
+                    Color powerUpColor = currentPowerUp switch
+                    {
+                        PowerUpType.Slow => Color.Pink,
+                        PowerUpType.Speed => Color.Blue,
+                        PowerUpType.DoublePoints => Color.Purple,
+                        _ => Color.White
+                    };
+                    DrawSquare(powerUpPosition, powerUpColor);
+                }
+
 
                 string statusText = $"Score: {score}";
                 if (hasShield) statusText += " SHIELD";
@@ -531,15 +551,45 @@ namespace StreetSnake
 
             base.Draw(gameTime);
         }
+        private void DrawPowerUp(Vector2 position, PowerUpType powerUpType)
+        {
+            Rectangle rect = new Rectangle(
+                (int)(position.X * GRID_SIZE),
+                (int)(position.Y * GRID_SIZE),
+                GRID_SIZE - 1,
+                GRID_SIZE - 1
+            );
 
-        private void DrawSquare(Vector2 position, Color color)
+            switch (powerUpType)
+            {
+                case PowerUpType.Shield:
+                    // Use the shield texture for this power-up
+                    spriteBatch.Draw(shieldTexture, rect, Color.White);
+                    break;
+                case PowerUpType.Slow:
+                    DrawSquare(position, Color.Pink);
+                    break;
+                case PowerUpType.Speed:
+                    DrawSquare(position, Color.Blue);
+                    break;
+                case PowerUpType.DoublePoints:
+                    DrawSquare(position, Color.Purple);
+                    break;
+                default:
+                    DrawSquare(position, Color.White);
+                    break;
+            }
+        }
+
+
+        private void DrawSquare(Vector2 position, Color white)
         {
             spriteBatch.Draw(squareTexture,
                 new Rectangle((int)(position.X * GRID_SIZE),
                             (int)(position.Y * GRID_SIZE),
                             GRID_SIZE - 1,
                             GRID_SIZE - 1),
-                color);
+                white);
         }
     }
 
