@@ -17,6 +17,7 @@ namespace StreetSnake
     // Moving the PowerUpType enum to the top level for better organization
     public enum PowerUpType
     {
+        Slow,
         Speed,
         Shield,
         DoublePoints
@@ -403,6 +404,9 @@ namespace StreetSnake
             powerUpTimer = 0;
             switch (currentPowerUp)
             {
+                case PowerUpType.Slow:
+                    currentMoveInterval = INITIAL_MOVE_INTERVAL * 2.5f;
+                    break;
                 case PowerUpType.Speed:
                     currentMoveInterval = INITIAL_MOVE_INTERVAL / 2.5f;
                     break;
@@ -437,7 +441,7 @@ namespace StreetSnake
 
         private void PlacePowerUp()
         {
-            currentPowerUp = (PowerUpType)random.Next(0, 3);
+            currentPowerUp = (PowerUpType)random.Next(0, 4);
             do
             {
                 powerUpPosition = new Vector2(
@@ -490,6 +494,7 @@ namespace StreetSnake
 
                 Color powerUpColor = currentPowerUp switch
                 {
+                    PowerUpType.Slow => Color.Pink,
                     PowerUpType.Speed => Color.Blue,
                     PowerUpType.Shield => Color.Yellow,
                     PowerUpType.DoublePoints => Color.Purple,
