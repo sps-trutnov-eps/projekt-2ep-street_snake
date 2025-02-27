@@ -35,9 +35,9 @@ namespace StreetSnake
         private Texture2D shieldTexture;
 
 
-        private const int GRID_SIZE = 25;
-        private const int GRID_WIDTH = 60;
-        private const int GRID_HEIGHT = 35;
+        private const int GRID_SIZE = 35;
+        private const int GRID_WIDTH = 40;
+        private const int GRID_HEIGHT = 25;
         private const float INITIAL_MOVE_INTERVAL = 0.15f;
         private const float OBSTACLE_SPAWN_INTERVAL = 3f;
         private const float OBSTACLE_LIFETIME = 6f;
