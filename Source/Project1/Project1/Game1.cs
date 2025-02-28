@@ -409,10 +409,10 @@ namespace StreetSnake
             switch (currentPowerUp)
             {
                 case PowerUpType.Slow:
-                    currentMoveInterval = INITIAL_MOVE_INTERVAL * 2.5f;
+                    currentMoveInterval = INITIAL_MOVE_INTERVAL * 1.5f;
                     break;
                 case PowerUpType.Speed:
-                    currentMoveInterval = INITIAL_MOVE_INTERVAL / 2.5f;
+                    currentMoveInterval = INITIAL_MOVE_INTERVAL / 1.5f;
                     break;
                 case PowerUpType.Shield:
                     hasShield = true;
@@ -526,7 +526,7 @@ namespace StreetSnake
                 if (hasShield) statusText += " SHIELD";
                 if (currentMoveInterval < INITIAL_MOVE_INTERVAL) statusText += " SPEED";
                 if (doublePoints) statusText += " 2X";
-
+                if (currentMoveInterval > INITIAL_MOVE_INTERVAL) statusText += " SLOW";
                 spriteBatch.DrawString(gameFont, statusText, new Vector2(5, 5), Color.White);
             }
             else if (currentGameState == GameState.GameOver)
