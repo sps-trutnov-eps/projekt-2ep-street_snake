@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace StreetSnake
 {
@@ -26,7 +27,8 @@ namespace StreetSnake
         Slow,
         Speed,
         Shield,
-        DoublePoints
+        DoublePoints,
+        Sword
     }
 
     public class Game1 : Game
@@ -526,6 +528,10 @@ namespace StreetSnake
                 case PowerUpType.Slow:
                     currentMoveInterval = INITIAL_MOVE_INTERVAL * 1.5f;
                     break;
+                case PowerUpType.Sword:
+                    snakeBody.RemoveAt(snakeBody.Count - 2);
+                    break;
+
                 case PowerUpType.Speed:
                     currentMoveInterval = INITIAL_MOVE_INTERVAL / 1.5f;
                     break;
@@ -569,7 +575,7 @@ namespace StreetSnake
 
         private void PlacePowerUp()
         {
-            currentPowerUp = (PowerUpType)random.Next(0, 4);
+            currentPowerUp = (PowerUpType)random.Next(0, 5);
             do
             {
                 powerUpPosition = new Vector2(
@@ -748,6 +754,9 @@ namespace StreetSnake
 
             switch (powerUpType)
             {
+                case PowerUpType.Sword:
+                    DrawSquare(position, Color.Yellow);
+                    break;
                 case PowerUpType.Shield:
                     
                     spriteBatch.Draw(shieldTexture, rect, Color.White);
