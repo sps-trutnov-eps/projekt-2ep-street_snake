@@ -20,7 +20,7 @@ namespace StreetSnake
         MultiPlayer
     }
 
-    // Moving the PowerUpType enum to the top level for better organization
+    
     public enum PowerUpType
     {
         Slow,
@@ -50,14 +50,12 @@ namespace StreetSnake
         private const float OBSTACLE_LIFETIME = 6f;
         private const float POWER_UP_DURATION = 5f;
 
-        // Player 1 (original snake)
         private List<Vector2> snakeBody;
         private Vector2 direction;
         private bool hasShield;
         private bool doublePoints;
         private int score;
 
-        // Player 2 (new snake)
         private List<Vector2> snakeBody2;
         private Vector2 direction2;
         private bool hasShield2;
@@ -74,8 +72,7 @@ namespace StreetSnake
         private float powerUpTimer;
         private bool isGameOver;
         private Random random;
-        private bool[] playerAlive; // Track which players are still alive
-
+        private bool[] playerAlive; 
         public enum ObstacleShape
         {
             Single,
@@ -145,26 +142,25 @@ namespace StreetSnake
         {
             foreach (var pos in positions)
             {
-                // Check if position is within grid bounds
                 if (pos.X < 0 || pos.X >= GRID_WIDTH || pos.Y < 0 || pos.Y >= GRID_HEIGHT)
                     return false;
 
-                // Check if position overlaps with snake(s)
+               
                 if (snakeBody.Contains(pos))
                     return false;
 
                 if (currentGameMode == GameMode.MultiPlayer && snakeBody2.Contains(pos))
                     return false;
 
-                // Check if position overlaps with existing obstacles
+                
                 if (obstacles.Any(o => o.Positions.Contains(pos)))
                     return false;
 
-                // Check if position overlaps with food or power-up
+                
                 if (pos == foodPosition || pos == powerUpPosition)
                     return false;
 
-                // Check if position is too close to snake head(s)
+                
                 if (Vector2.Distance(pos, snakeBody[0]) <= 3)
                     return false;
 
@@ -214,7 +210,7 @@ namespace StreetSnake
 
         private void InitializeGame()
         {
-            // Initialize Player 1 (original snake)
+            
             snakeBody = new List<Vector2>
             {
                 new Vector2(GRID_WIDTH / 3, GRID_HEIGHT / 2),
@@ -227,7 +223,7 @@ namespace StreetSnake
             doublePoints = false;
             score = 0;
 
-            // Initialize Player 2 (if in multiplayer mode)
+            
             if (currentGameMode == GameMode.MultiPlayer)
             {
                 snakeBody2 = new List<Vector2>
@@ -374,7 +370,7 @@ namespace StreetSnake
         {
             KeyboardState keyboardState = Keyboard.GetState();
 
-            // Player 1 controls (Arrow keys)
+            
             if (playerAlive[0])
             {
                 if (keyboardState.IsKeyDown(Keys.Up) && direction != Vector2.UnitY)
@@ -387,7 +383,7 @@ namespace StreetSnake
                     direction = Vector2.UnitX;
             }
 
-            // Player 2 controls (WASD)
+            
             if (currentGameMode == GameMode.MultiPlayer && playerAlive[1])
             {
                 if (keyboardState.IsKeyDown(Keys.W) && direction2 != Vector2.UnitY)
@@ -405,7 +401,7 @@ namespace StreetSnake
         {
             moveTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            // Update power-up timers
+            
             if (hasShield || doublePoints || hasShield2 || doublePoints2 || currentMoveInterval != INITIAL_MOVE_INTERVAL)
             {
                 powerUpTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -419,21 +415,21 @@ namespace StreetSnake
             {
                 moveTimer = 0;
 
-                // Move Player 1 if alive
+                
                 if (playerAlive[0])
                 {
                     MoveSnake(snakeBody, direction);
                     CheckCollisions(0);
                 }
 
-                // Move Player 2 if in multiplayer mode and alive
+                
                 if (currentGameMode == GameMode.MultiPlayer && playerAlive[1])
                 {
                     MoveSnake(snakeBody2, direction2);
                     CheckCollisions(1);
                 }
 
-                // Check if game is over
+                
                 CheckGameOver();
             }
         }
@@ -451,11 +447,10 @@ namespace StreetSnake
             Vector2 head = snake[0];
             bool hasShieldActive = playerIndex == 0 ? hasShield : hasShield2;
 
-            // Check wall collisions
+            
             bool hitWall = head.X < 0 || head.X >= GRID_WIDTH || head.Y < 0 || head.Y >= GRID_HEIGHT;
             bool hitObstacle = obstacles.Any(o => o.Positions.Contains(head));
 
-            // Check collision with other snake in multiplayer
             bool hitOtherSnake = false;
             if (currentGameMode == GameMode.MultiPlayer)
             {
@@ -463,44 +458,44 @@ namespace StreetSnake
                 hitOtherSnake = playerAlive[1 - playerIndex] && otherSnake.Contains(head);
             }
 
-            // Check self collision
+            
             bool hitSelf = snake.Skip(1).Any(segment => segment == head);
 
             if (hitWall || hitObstacle || hitOtherSnake || hitSelf)
             {
                 if (hasShieldActive)
                 {
-                    // Use shield to protect
+                    
                     if (playerIndex == 0)
                         hasShield = false;
                     else
                         hasShield2 = false;
 
-                    // Lose tail segment
-                    if (snake.Count > 3) // Prevent snake from disappearing
+                   
+                    if (snake.Count > 3)
                         snake.RemoveAt(snake.Count - 1);
                     return;
                 }
 
-                // Player is eliminated
+                
                 playerAlive[playerIndex] = false;
             }
 
-            // Check food collision
+            
             if (head == foodPosition)
             {
-                // Add points
+                
                 if (playerIndex == 0)
                     score += doublePoints ? 2 : 1;
                 else
                     score2 += doublePoints2 ? 2 : 1;
 
-                // Grow snake
+                
                 snake.Add(snake[snake.Count - 1]);
                 PlaceFood();
             }
 
-            // Check power-up collision
+            
             if (head == powerUpPosition)
             {
                 ApplyPowerUp(playerIndex);
@@ -510,7 +505,7 @@ namespace StreetSnake
 
         private void CheckGameOver()
         {
-            // Game is over if all players are dead
+            
             if (currentGameMode == GameMode.SinglePlayer && !playerAlive[0])
             {
                 isGameOver = true;
@@ -595,7 +590,6 @@ namespace StreetSnake
 
             if (currentGameState == GameState.MainMenu)
             {
-                // Draw title
                 string titleText = "Street Snake";
                 Vector2 titlePosition = new Vector2(
                     (GRID_WIDTH * GRID_SIZE - gameFont.MeasureString(titleText).X) / 2,
@@ -603,14 +597,14 @@ namespace StreetSnake
                 );
                 spriteBatch.DrawString(gameFont, titleText, titlePosition, Color.Green);
 
-                // Draw the buttons
+                
                 startSinglePlayerButton.Draw(spriteBatch);
                 startMultiPlayerButton.Draw(spriteBatch);
                 exitButton.Draw(spriteBatch);
             }
             else if (currentGameState == GameState.Playing)
             {
-                // Draw obstacles
+                
                 foreach (var obstacle in obstacles)
                 {
                     foreach (var position in obstacle.Positions)
@@ -619,7 +613,7 @@ namespace StreetSnake
                     }
                 }
 
-                // Draw Player 1 snake
+                
                 if (playerAlive[0])
                 {
                     for (int i = 0; i < snakeBody.Count; i++)
@@ -629,7 +623,7 @@ namespace StreetSnake
                     }
                 }
 
-                // Draw Player 2 snake in multiplayer mode
+                
                 if (currentGameMode == GameMode.MultiPlayer && playerAlive[1])
                 {
                     for (int i = 0; i < snakeBody2.Count; i++)
@@ -639,19 +633,18 @@ namespace StreetSnake
                     }
                 }
 
-                // Draw food
+               
                 DrawSquare(foodPosition, Color.Red);
 
-                // Draw power-up
+               
                 DrawPowerUp(powerUpPosition, currentPowerUp);
 
-                // Draw player 1 status
                 string p1StatusText = $"P1 Score: {score}";
                 if (hasShield) p1StatusText += " SHIELD";
                 if (doublePoints) p1StatusText += " 2X";
                 spriteBatch.DrawString(gameFont, p1StatusText, new Vector2(5, 5), playerAlive[0] ? Color.White : Color.Red);
 
-                // Draw player 2 status in multiplayer
+                
                 if (currentGameMode == GameMode.MultiPlayer)
                 {
                     string p2StatusText = $"P2 Score: {score2}";
@@ -663,7 +656,7 @@ namespace StreetSnake
                         playerAlive[1] ? Color.White : Color.Red);
                 }
 
-                // Draw game speed status
+                
                 string speedText = currentMoveInterval < INITIAL_MOVE_INTERVAL ? "SPEED" :
                                   (currentMoveInterval > INITIAL_MOVE_INTERVAL ? "SLOW" : "");
                 if (!string.IsNullOrEmpty(speedText))
@@ -682,7 +675,7 @@ namespace StreetSnake
                 );
                 spriteBatch.DrawString(gameFont, gameOverText, textPosition, Color.Red);
 
-                // Display winner in multiplayer
+                
                 if (currentGameMode == GameMode.MultiPlayer)
                 {
                     string winnerText;
@@ -711,7 +704,7 @@ namespace StreetSnake
                     spriteBatch.DrawString(gameFont, winnerText, winnerPosition, winnerColor);
                 }
 
-                // Display final scores
+                
                 string p1ScoreText = $"Player 1 Score: {score}";
                 Vector2 p1ScorePosition = new Vector2(
                     (GRID_WIDTH * GRID_SIZE - gameFont.MeasureString(p1ScoreText).X) / 2,
@@ -730,7 +723,7 @@ namespace StreetSnake
                     spriteBatch.DrawString(gameFont, p2ScoreText, p2ScorePosition, Color.White);
                 }
 
-                // Display restart instructions
+                
                 string restartText = "Press R to restart or M for menu";
                 Vector2 restartPosition = new Vector2(
                     (GRID_WIDTH * GRID_SIZE - gameFont.MeasureString(restartText).X) / 2,
@@ -756,7 +749,7 @@ namespace StreetSnake
             switch (powerUpType)
             {
                 case PowerUpType.Shield:
-                    // Use the shield texture for this power-up
+                    
                     spriteBatch.Draw(shieldTexture, rect, Color.White);
                     break;
                 case PowerUpType.Slow:
@@ -806,7 +799,6 @@ namespace StreetSnake
             this.font = font;
             this.bounds = new Rectangle((int)Position.X, (int)Position.Y, (int)font.MeasureString(Text).X + 40, (int)font.MeasureString(Text).Y + 20);
 
-            // Create button texture
             buttonTexture = new Texture2D(graphicsDevice, 1, 1);
             buttonTexture.SetData(new[] { Color.White });
         }
@@ -825,11 +817,10 @@ namespace StreetSnake
             MouseState mouseState = Mouse.GetState();
             bool isHovering = bounds.Contains(mouseState.Position);
 
-            // Draw button background
+            
             Color bgColor = isHovering ? Color.DarkGray : Color.Gray;
             spriteBatch.Draw(buttonTexture, bounds, bgColor);
 
-            // Draw button text
             Vector2 textSize = font.MeasureString(Text);
             Vector2 textPosition = new Vector2(
                 bounds.X + (bounds.Width - textSize.X) / 2,
