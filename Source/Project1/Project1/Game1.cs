@@ -213,7 +213,7 @@ namespace StreetSnake
             
             snakeBody = new List<Vector2>
             {
-                new Vector2(GRID_WIDTH / 3, GRID_HEIGHT / 2),
+                new Vector2(GRID_WIDTH / 3, GRID_HEIGHT / 3),
                 new Vector2(GRID_WIDTH / 3 - 1, GRID_HEIGHT / 2),
                 new Vector2(GRID_WIDTH / 3 - 2, GRID_HEIGHT / 2)
             };
@@ -229,7 +229,7 @@ namespace StreetSnake
                 snakeBody2 = new List<Vector2>
                 {
                     new Vector2(GRID_WIDTH * 2 / 3, GRID_HEIGHT / 2),
-                    new Vector2(GRID_WIDTH * 2 / 3 + 1, GRID_HEIGHT / 2),
+                    new Vector2(GRID_WIDTH * 2 / 3 + 1, GRID_HEIGHT / 3),
                     new Vector2(GRID_WIDTH * 2 / 3 + 2, GRID_HEIGHT / 2)
                 };
 
