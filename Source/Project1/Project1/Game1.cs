@@ -50,6 +50,7 @@ namespace StreetSnake
         private const float OBSTACLE_LIFETIME = 6f;
         private const float POWER_UP_DURATION = 5f;
 
+       
         private List<Vector2> snakeBody;
         private Vector2 direction;
         private bool hasShield;
@@ -73,6 +74,7 @@ namespace StreetSnake
         private bool isGameOver;
         private Random random;
         private bool[] playerAlive; 
+
         public enum ObstacleShape
         {
             Single,
@@ -145,14 +147,12 @@ namespace StreetSnake
                 if (pos.X < 0 || pos.X >= GRID_WIDTH || pos.Y < 0 || pos.Y >= GRID_HEIGHT)
                     return false;
 
-               
                 if (snakeBody.Contains(pos))
                     return false;
 
                 if (currentGameMode == GameMode.MultiPlayer && snakeBody2.Contains(pos))
                     return false;
 
-                
                 if (obstacles.Any(o => o.Positions.Contains(pos)))
                     return false;
 
