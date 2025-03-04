@@ -43,6 +43,7 @@ namespace StreetSnake
         private Button startMultiPlayerButton;
         private Button exitButton;
         private Texture2D shieldTexture;
+        private Texture2D swordTexture;
 
         private const int GRID_SIZE = 35;
         private const int GRID_WIDTH = 40;
@@ -297,6 +298,7 @@ namespace StreetSnake
             squareTexture.SetData(new[] { Color.White });
             gameFont = Content.Load<SpriteFont>("GameFont");
             shieldTexture = Content.Load<Texture2D>("shield");
+            swordTexture = Content.Load<Texture2D>("Sword");
 
             startSinglePlayerButton.LoadContent(gameFont, GraphicsDevice);
             startMultiPlayerButton.LoadContent(gameFont, GraphicsDevice);
@@ -755,7 +757,7 @@ namespace StreetSnake
             switch (powerUpType)
             {
                 case PowerUpType.Sword:
-                    DrawSquare(position, Color.Yellow);
+                    spriteBatch.Draw(swordTexture, rect, Color.White);
                     break;
                 case PowerUpType.Shield:
                     
