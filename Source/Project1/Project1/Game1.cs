@@ -589,7 +589,7 @@ namespace StreetSnake
                     obstacles.Any(o => o.Positions.Contains(powerUpPosition)) ||
                     powerUpPosition == foodPosition);
         }
-
+        // nevim
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
