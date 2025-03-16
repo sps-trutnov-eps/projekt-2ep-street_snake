@@ -21,7 +21,8 @@ namespace StreetSnake
         MultiPlayer
     }
 
-// je mi spatne 
+// je mi spatne
+// // haf
     public enum PowerUpType
     {
         Slow,
