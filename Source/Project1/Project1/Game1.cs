@@ -21,7 +21,7 @@ namespace StreetSnake
         MultiPlayer
     }
 
-    
+// je mi spatne 
     public enum PowerUpType
     {
         Slow,
