@@ -621,7 +621,7 @@ namespace StreetSnake
                     }
                 }
 
-                
+                // test
                 if (playerAlive[0])
                 {
                     for (int i = 0; i < snakeBody.Count; i++)
