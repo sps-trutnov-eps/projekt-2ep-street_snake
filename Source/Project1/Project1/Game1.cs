@@ -351,6 +351,7 @@ namespace StreetSnake
             base.Update(gameTime);
         }
         // co mam delat?
+        // nevím
 
         private void UpdateObstacles(float elapsed)
         {
