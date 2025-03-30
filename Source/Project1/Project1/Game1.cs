@@ -617,6 +617,7 @@ namespace StreetSnake
             {
                 
                 // mic check
+                // 1 2
                 foreach (var obstacle in obstacles)
                 {
                     foreach (var position in obstacle.Positions)
