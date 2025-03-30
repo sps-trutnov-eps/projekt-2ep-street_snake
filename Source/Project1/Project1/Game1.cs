@@ -22,7 +22,7 @@ namespace StreetSnake
     }
 
 // je mi spatne
-// // haf mnau
+
     public enum PowerUpType
     {
         Slow,
