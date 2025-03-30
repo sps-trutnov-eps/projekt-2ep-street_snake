@@ -616,6 +616,7 @@ namespace StreetSnake
             else if (currentGameState == GameState.Playing)
             {
                 
+                // mic check
                 foreach (var obstacle in obstacles)
                 {
                     foreach (var position in obstacle.Positions)
