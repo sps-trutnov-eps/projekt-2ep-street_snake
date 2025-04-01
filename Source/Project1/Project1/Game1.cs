@@ -45,7 +45,7 @@ namespace StreetSnake
         private Button exitButton;
         private Texture2D shieldTexture;
         private Texture2D swordTexture;
-
+        private Texture2D backgroundTexture;
         private const int GRID_SIZE = 35;
         private const int GRID_WIDTH = 40;
         private const int GRID_HEIGHT = 25;
@@ -300,6 +300,7 @@ namespace StreetSnake
             gameFont = Content.Load<SpriteFont>("GameFont");
             shieldTexture = Content.Load<Texture2D>("shield");
             swordTexture = Content.Load<Texture2D>("Sword");
+            backgroundTexture = Content.Load<Texture2D>("pozadi");
 
             startSinglePlayerButton.LoadContent(gameFont, GraphicsDevice);
             startMultiPlayerButton.LoadContent(gameFont, GraphicsDevice);
@@ -598,7 +599,10 @@ namespace StreetSnake
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
-
+            spriteBatch.Draw(
+        backgroundTexture,
+        new Rectangle(0, 0, GRID_WIDTH * GRID_SIZE, GRID_HEIGHT * GRID_SIZE),
+        Color.White);
             if (currentGameState == GameState.MainMenu)
             {
                 string titleText = "Street Snake";
