@@ -619,9 +619,7 @@ namespace StreetSnake
             }
             else if (currentGameState == GameState.Playing)
             {
-                
-                
-              
+                  // styl
                 foreach (var obstacle in obstacles)
                 {
                     foreach (var position in obstacle.Positions)
