@@ -46,6 +46,10 @@ namespace StreetSnake
         private Texture2D shieldTexture;
         private Texture2D swordTexture;
         private Texture2D backgroundTexture;
+        private Texture2D appleTexture;
+        private Texture2D slowTexture;
+        private Texture2D speedTexture;
+        private Texture2D doubleTexture;
         private const int GRID_SIZE = 35;
         private const int GRID_WIDTH = 40;
         private const int GRID_HEIGHT = 25;
@@ -301,7 +305,10 @@ namespace StreetSnake
             shieldTexture = Content.Load<Texture2D>("shield");
             swordTexture = Content.Load<Texture2D>("Sword");
             backgroundTexture = Content.Load<Texture2D>("pozadi");
-
+            appleTexture = Content.Load<Texture2D>("apple");
+            speedTexture = Content.Load<Texture2D>("banana");
+            doubleTexture = Content.Load<Texture2D>("2x");
+            slowTexture = Content.Load<Texture2D>("pill");
             startSinglePlayerButton.LoadContent(gameFont, GraphicsDevice);
             startMultiPlayerButton.LoadContent(gameFont, GraphicsDevice);
             exitButton.LoadContent(gameFont, GraphicsDevice);
@@ -648,10 +655,17 @@ namespace StreetSnake
                     }
                 }
 
-               
-                DrawSquare(foodPosition, Color.Red);
 
-               
+                DrawSquare(foodPosition, Color.Transparent);
+                Rectangle foodRect = new Rectangle(
+                    (int)(foodPosition.X * GRID_SIZE),
+                    (int)(foodPosition.Y * GRID_SIZE),
+                    GRID_SIZE - 1,
+                    GRID_SIZE - 1
+                );
+                spriteBatch.Draw(appleTexture, foodRect, Color.White);
+
+
                 DrawPowerUp(powerUpPosition, currentPowerUp);
 
                 string p1StatusText = $"P1 Score: {score}";
@@ -771,16 +785,16 @@ namespace StreetSnake
                     spriteBatch.Draw(shieldTexture, rect, Color.White);
                     break;
                 case PowerUpType.Slow:
-                    DrawSquare(position, Color.Pink);
+                    spriteBatch.Draw(slowTexture, rect, Color.White);
                     break;
                 case PowerUpType.Speed:
-                    DrawSquare(position, Color.Blue);
+                    spriteBatch.Draw(speedTexture, rect, Color.White);
                     break;
                 case PowerUpType.DoublePoints:
-                    DrawSquare(position, Color.Purple);
+                    spriteBatch.Draw(doubleTexture, rect, Color.White);
                     break;
                 default:
-                    DrawSquare(position, Color.White);
+                    spriteBatch.Draw(appleTexture, rect, Color.White);
                     break;
             }
         }
